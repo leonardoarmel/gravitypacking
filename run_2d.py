@@ -18,6 +18,9 @@ Add --plot to save the evolved outline and one settled packing to result.png.
 from __future__ import annotations
 
 import argparse
+import json
+import os
+from datetime import datetime
 import numpy as np
 
 from packing_ga.problem import (make_problem_2d, corner_genomes_2d,
@@ -91,6 +94,10 @@ def main():
         band_hint = ("To reach higher void, raise --amp or --modes "
                      "(spikier shapes leave more empty space).")
 
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    exp_dir = os.path.join(os.path.dirname(__file__), "experiments")
+    os.makedirs(exp_dir, exist_ok=True)
+
     print(f"Family: {args.family}   target void fraction: {args.target:.3f}")
     print("Probing achievable band...")
     lo, hi = prob.probe_range(corners, drops=2)
@@ -118,11 +125,30 @@ def main():
     print(f"  target void    : {target:.3f}")
     print(f"  achieved void  : {achieved:.3f}  (|error| = {abs(achieved-target):.3f})")
 
+    log = {
+        "timestamp": ts,
+        "params": vars(args),
+        "probed_band": {"lo": round(lo, 4), "hi": round(hi, 4)},
+        "clamped_target": round(target, 4),
+        "result": {
+            "genome": [round(v, 4) for v in best.genome.tolist()],
+            "shape": descr(best.genome),
+            "target_void": round(target, 4),
+            "achieved_void": round(achieved, 4),
+            "error": round(abs(achieved - target), 4),
+        },
+    }
+    log_path = os.path.join(exp_dir, f"{ts}.json")
+    with open(log_path, "w") as f:
+        json.dump(log, f, indent=2)
+    print(f"\n  log -> {log_path}")
+
     if args.plot:
-        _plot(build, best.genome, args.seed, n_shapes)
+        plot_path = os.path.join(exp_dir, f"{ts}_result.png")
+        _plot(build, best.genome, args.seed, n_shapes, plot_path)
 
 
-def _plot(build, genome, seed, n_shapes):
+def _plot(build, genome, seed, n_shapes, out_path="result.png"):
     try:
         import matplotlib
         matplotlib.use("Agg")
@@ -152,8 +178,8 @@ def _plot(build, genome, seed, n_shapes):
     axB.set_xlim(-9 * L, 9 * L); axB.set_ylim(0, res.surface_y + 2 * L)
     axB.set_aspect("equal"); axB.set_title("Settled packing (red = measurement window)")
     fig.tight_layout()
-    fig.savefig("result.png", dpi=110)
-    print("  saved plot -> result.png")
+    fig.savefig(out_path, dpi=110)
+    print(f"  saved plot -> {out_path}")
 
 
 if __name__ == "__main__":

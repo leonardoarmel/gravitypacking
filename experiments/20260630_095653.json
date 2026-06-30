@@ -1,0 +1,31 @@
+{
+  "timestamp": "20260630_095653",
+  "params": {
+    "target": 0.1,
+    "family": "superellipse",
+    "modes": 4,
+    "amp": 0.6,
+    "seed": 0,
+    "pop": 12,
+    "gen": 8,
+    "drops": 2,
+    "n_shapes": 0,
+    "tol": 0.015,
+    "plot": true
+  },
+  "probed_band": {
+    "lo": 0.0238,
+    "hi": 0.2124
+  },
+  "clamped_target": 0.1,
+  "result": {
+    "genome": [
+      3.7181,
+      7.5455
+    ],
+    "shape": "rounded-rectangle/box-like, elongated 3.7:1",
+    "target_void": 0.1,
+    "achieved_void": 0.0804,
+    "error": 0.0196
+  }
+}
